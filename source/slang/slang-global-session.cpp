@@ -19,6 +19,7 @@
 extern Slang::String get_slang_cuda_prelude();
 extern Slang::String get_slang_cpp_prelude();
 extern Slang::String get_slang_hlsl_prelude();
+extern Slang::String get_slang_ispc_prelude();
 
 namespace Slang
 {
@@ -30,9 +31,10 @@ void Session::init()
 #if SLANG_ENABLE_IR_BREAK_ALLOC
     // Read environment variable for IR debugging
     StringBuilder irBreakEnv;
-    if (SLANG_SUCCEEDED(PlatformUtil::getEnvironmentVariable(
-            UnownedStringSlice("SLANG_DEBUG_IR_BREAK"),
-            irBreakEnv)))
+    if (SLANG_SUCCEEDED(
+            PlatformUtil::getEnvironmentVariable(
+                UnownedStringSlice("SLANG_DEBUG_IR_BREAK"),
+                irBreakEnv)))
     {
         String envValue = irBreakEnv.produceString();
         if (envValue.getLength())
@@ -126,6 +128,7 @@ void Session::init()
     m_languagePreludes[Index(SourceLanguage::CUDA)] = get_slang_cuda_prelude();
     m_languagePreludes[Index(SourceLanguage::CPP)] = get_slang_cpp_prelude();
     m_languagePreludes[Index(SourceLanguage::HLSL)] = get_slang_hlsl_prelude();
+    m_languagePreludes[Index(SourceLanguage::ISPC)] = get_slang_ispc_prelude();
 
     if (!spirvCoreGrammarInfo)
         spirvCoreGrammarInfo = SPIRVCoreGrammarInfo::getEmbeddedVersion();

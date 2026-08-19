@@ -304,9 +304,10 @@ struct ValidateUniformityContext
                                 addToWorkList(ptr);
                                 if (isDynamicUniformLocation(ptr))
                                 {
-                                    sink->diagnose(Diagnostics::ExpectDynamicUniformValue{
-                                        .location = user->sourceLoc,
-                                    });
+                                    sink->diagnose(
+                                        Diagnostics::ExpectDynamicUniformValue{
+                                            .location = user->sourceLoc,
+                                        });
                                 }
                                 else
                                 {

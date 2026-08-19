@@ -98,6 +98,10 @@ struct CLikeSourceEmitter::ComputeEmitActionsContext
         {
             return SourceLanguage::WGSL;
         }
+    case CodeGenTarget::ISPC:
+        {
+            return SourceLanguage::ISPC;
+        }
     }
 }
 
@@ -303,8 +307,9 @@ IRNumThreadsDecoration* CLikeSourceEmitter::getComputeThreadGroupSize(
     {
         if (id >= 0)
         {
-            getSink()->diagnose(Diagnostics::UnsupportedSpecializationConstantForNumThreads{
-                .location = decor->sourceLoc});
+            getSink()->diagnose(
+                Diagnostics::UnsupportedSpecializationConstantForNumThreads{
+                    .location = decor->sourceLoc});
             break;
         }
     }
@@ -461,7 +466,8 @@ void CLikeSourceEmitter::_emitType(IRType* type, DeclaratorInfo* declarator)
     case kIROp_UntypedResourceHandleType:
     case kIROp_UntypedSamplerHandleType:
         // `lowerUntypedResourceHandleToUInt` rewrites every untyped descriptor-heap handle to
-        // `uint` before emit, so one reaching here is an internal error (a leak from that pass).
+        // `uint` before emit, so one reaching here is an internal error (a leak from that
+        // pass).
         SLANG_UNEXPECTED("untyped descriptor-heap handle type should have been lowered to uint");
         break;
 
@@ -1095,8 +1101,8 @@ void CLikeSourceEmitter::appendScrubbedName(const UnownedStringSlice& name, Stri
 
     if (getSourceLanguage() == SourceLanguage::GLSL)
     {
-        // It looks like the default glslang name limit is 1024, but let's go a little less so there
-        // is some wiggle room
+        // It looks like the default glslang name limit is 1024, but let's go a little less so
+        // there is some wiggle room
         const Index maxTokenLength = 1024 - 8;
 
         const Index length = out.getLength();
@@ -1328,7 +1334,8 @@ void CLikeSourceEmitter::emitSimpleValueImpl(IRInst* inst)
                 case BaseType::Bool:
                     // `lowerEnumType` canonicalizes every `bool`-tagged enumerator constant to
                     // `kIROp_BoolLit`, so a `bool`-typed `IRIntLit` must never reach emit here
-                    // (it would print via the `int8_t` arm below). See shader-slang/slang#12298.
+                    // (it would print via the `int8_t` arm below). See
+                    // shader-slang/slang#12298.
                     SLANG_UNEXPECTED("bool-typed IRIntLit should have been lowered to IRBoolLit");
                     break;
 
@@ -1721,8 +1728,8 @@ bool CLikeSourceEmitter::shouldFoldInstIntoUseSites(IRInst* inst)
 
     auto user = use->getUser();
 
-    // Check if the use is a call using a target intrinsic that uses the parameter more than once
-    // in the intrinsic definition.
+    // Check if the use is a call using a target intrinsic that uses the parameter more than
+    // once in the intrinsic definition.
     if (auto callInst = as<IRCall>(user))
     {
         const auto funcValue = callInst->getCallee();
@@ -1730,8 +1737,8 @@ bool CLikeSourceEmitter::shouldFoldInstIntoUseSites(IRInst* inst)
         // Let's see if this instruction is a intrinsic call
         // This is significant, because we can within a target intrinsics definition multiple
         // accesses to the same parameter. This is not indicated into the call, and can lead to
-        // output code computes something multiple times as it is folding into the expression of the
-        // the target intrinsic, which we don't want.
+        // output code computes something multiple times as it is folding into the expression of
+        // the the target intrinsic, which we don't want.
         UnownedStringSlice intrinsicDef;
         IRInst* intrinsicInst;
         if (findTargetIntrinsicDefinition(funcValue, intrinsicDef, intrinsicInst))
@@ -1741,8 +1748,8 @@ bool CLikeSourceEmitter::shouldFoldInstIntoUseSites(IRInst* inst)
             const Index paramIndex = Index(use - args);
             SLANG_ASSERT(paramIndex >= 0 && paramIndex < Index(callInst->getArgCount()));
 
-            // Look through the slice to seeing how many times this parameters is used (signified
-            // via the $0...$9)
+            // Look through the slice to seeing how many times this parameters is used
+            // (signified via the $0...$9)
             {
                 UnownedStringSlice slice = intrinsicDef;
 
@@ -2357,9 +2364,10 @@ void CLikeSourceEmitter::emitInstStmt(IRInst* inst)
 
 void CLikeSourceEmitter::diagnoseUnhandledInst(IRInst* inst)
 {
-    getSink()->diagnose(Diagnostics::Unimplemented{
-        .feature = "unexpected IR opcode during code emit",
-        .location = inst->sourceLoc});
+    getSink()->diagnose(
+        Diagnostics::Unimplemented{
+            .feature = "unexpected IR opcode during code emit",
+            .location = inst->sourceLoc});
 }
 
 bool CLikeSourceEmitter::hasExplicitConstantBufferOffset(IRInst* cbufferType)
@@ -2587,9 +2595,10 @@ void CLikeSourceEmitter::defaultEmitInstExpr(IRInst* inst, const EmitOpInfo& inO
     case kIROp_CastUntypedResourceHandleToUInt:
     case kIROp_CastUIntToUntypedSamplerHandle:
     case kIROp_CastUntypedSamplerHandleToUInt:
-        // The untyped descriptor-heap handle wrap/unwrap casts are an internal representation that
-        // `lowerUntypedResourceHandleToUInt` forwards to their `uint` operand and removes before
-        // emit. Seeing one here means that pass did not run (or ran too late), so this is a bug.
+        // The untyped descriptor-heap handle wrap/unwrap casts are an internal representation
+        // that `lowerUntypedResourceHandleToUInt` forwards to their `uint` operand and removes
+        // before emit. Seeing one here means that pass did not run (or ran too late), so this
+        // is a bug.
         SLANG_UNEXPECTED("untyped descriptor-heap handle cast should have been lowered to uint");
     // Binary ops
     case kIROp_Add:
@@ -2644,9 +2653,9 @@ void CLikeSourceEmitter::defaultEmitInstExpr(IRInst* inst, const EmitOpInfo& inO
                 }
             case kIROp_Neg:
                 {
-                    // Emit a space after the unary -, so if we are followed by a negative literal
-                    // we don't end up with -- which some downstream compilers determine to be
-                    // decrement.
+                    // Emit a space after the unary -, so if we are followed by a negative
+                    // literal we don't end up with -- which some downstream compilers determine
+                    // to be decrement.
                     m_writer->emit("- ");
                     break;
                 }
@@ -2822,10 +2831,12 @@ void CLikeSourceEmitter::defaultEmitInstExpr(IRInst* inst, const EmitOpInfo& inO
     case kIROp_ImageSubscript:
         // We should have legalized ImageSubscript before emit for metal targets
         if (isMetalTarget(this->getTargetReq()))
-            getSink()->diagnose(Diagnostics::Unimplemented{
-                .feature = "kIROp_ImageSubscript is unimplemented for Metal, expected legalization "
-                           "beforehand",
-                .location = inst->sourceLoc});
+            getSink()->diagnose(
+                Diagnostics::Unimplemented{
+                    .feature = "kIROp_ImageSubscript is unimplemented for Metal, expected "
+                               "legalization "
+                               "beforehand",
+                    .location = inst->sourceLoc});
         [[fallthrough]];
     case kIROp_GetElement:
     case kIROp_MeshOutputRef:
@@ -4256,10 +4267,10 @@ void CLikeSourceEmitter::emitBitfieldExtractImpl(IRInst* inst)
     // If unsigned, bfue := ((val>>off)&((1u<<bts)-1))
     // Else signed, bfse := (((val>>off)&((1u<<bts)-1))<<(nbts-bts)>>(nbts-bts));
     //
-    // Note: In WGSL, the data type for bit operators are more restricted than in other languages.
-    // The number of bits to shift must be a u32 or vecN<u32>, therefore we have to cast this
-    // operand to u32 always. Another constraint is that for "&" and "|" operators, the operands
-    // must have the same type.
+    // Note: In WGSL, the data type for bit operators are more restricted than in other
+    // languages. The number of bits to shift must be a u32 or vecN<u32>, therefore we have to
+    // cast this operand to u32 always. Another constraint is that for "&" and "|" operators,
+    // the operands must have the same type.
     // TODO: We can consider to bring the logic to WGSLSourceEmitter::emitBitfieldExtractImpl so
     // that we don't have to have those special handling here.
     Slang::IRType* dataType = inst->getDataType();
@@ -4609,8 +4620,9 @@ void CLikeSourceEmitter::emitClass(IRClassType* classType)
         m_writer->emit("SLANG_COM_OBJECT_IUNKNOWN_ALL\n");
         m_writer->emit("void* getInterface(const Guid & uuid)\n{\n");
         m_writer->indent();
-        m_writer->emit("if (uuid == ISlangUnknown::getTypeGuid()) return "
-                       "static_cast<ISlangUnknown*>(this);\n");
+        m_writer->emit(
+            "if (uuid == ISlangUnknown::getTypeGuid()) return "
+            "static_cast<ISlangUnknown*>(this);\n");
         for (auto wt : comWitnessTables)
         {
             auto interfaceName = getName(wt->getConformanceType());
@@ -4698,8 +4710,8 @@ void CLikeSourceEmitter::emitTempModifiers(IRInst* temp)
 
 void CLikeSourceEmitter::emitVarModifiers(IRVarLayout* layout, IRInst* varDecl, IRType* varType)
 {
-    // TODO(JS): We could push all of this onto the target impls, and then not need so many virtual
-    // hooks.
+    // TODO(JS): We could push all of this onto the target impls, and then not need so many
+    // virtual hooks.
     emitVarDecorationsImpl(varDecl);
     emitTempModifiers(varDecl);
 

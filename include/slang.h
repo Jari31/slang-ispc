@@ -724,6 +724,8 @@ typedef uint32_t SlangSizeT;
         SLANG_HOST_LLVM_IR = 35,     ///< Host LLVM IR assembly
         SLANG_SHADER_LLVM_IR = 36,   ///< Host LLVM IR assembly (kernel/shader)
 
+        SLANG_ISPC_SOURCE = 37, ///< Implicit SIMD Program Compiler source.
+
         SLANG_TARGET_COUNT_OF,
     };
 
@@ -877,6 +879,7 @@ typedef uint32_t SlangSizeT;
         SLANG_SOURCE_LANGUAGE_METAL = 8,
         SLANG_SOURCE_LANGUAGE_WGSL = 9,
         SLANG_SOURCE_LANGUAGE_LLVM = 10,
+        SLANG_SOURCE_LANGUAGE_ISPC = 11,
         SLANG_SOURCE_LANGUAGE_COUNT_OF,
     };
 

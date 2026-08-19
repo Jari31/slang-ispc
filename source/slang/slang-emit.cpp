@@ -17,6 +17,7 @@
 #include "slang-emit-cuda.h"
 #include "slang-emit-glsl.h"
 #include "slang-emit-hlsl.h"
+#include "slang-emit-ispc.h"
 #include "slang-emit-llvm.h"
 #include "slang-emit-metal.h"
 #include "slang-emit-slang.h"
@@ -665,25 +666,28 @@ bool checkStaticAssert(IRInst* inst, DiagnosticSink* sink)
                     IRInst* msg = inst->getOperand(1);
                     if (auto msgLit = as<IRStringLit>(msg))
                     {
-                        sink->diagnose(Diagnostics::StaticAssertionFailure{
-                            .message = String(msgLit->getStringSlice()),
-                            .location = inst->sourceLoc,
-                        });
+                        sink->diagnose(
+                            Diagnostics::StaticAssertionFailure{
+                                .message = String(msgLit->getStringSlice()),
+                                .location = inst->sourceLoc,
+                            });
                     }
                     else
                     {
-                        sink->diagnose(Diagnostics::StaticAssertionFailureWithoutMessage{
-                            .location = inst->sourceLoc,
-                        });
+                        sink->diagnose(
+                            Diagnostics::StaticAssertionFailureWithoutMessage{
+                                .location = inst->sourceLoc,
+                            });
                     }
                     diagnoseCallStack(inst, sink);
                 }
             }
             else
             {
-                sink->diagnose(Diagnostics::StaticAssertionConditionNotConstant{
-                    .location = condi->sourceLoc,
-                });
+                sink->diagnose(
+                    Diagnostics::StaticAssertionConditionNotConstant{
+                        .location = condi->sourceLoc,
+                    });
             }
 
             return true;
@@ -1141,10 +1145,11 @@ Result linkAndOptimizeIR(
                 {
                     if (sink)
                     {
-                        sink->diagnose(Diagnostics::CoverageBindingOptionOutOfRange{
-                            .option = "-trace-coverage-reserved-space",
-                            .parsedValue = value.intValue,
-                        });
+                        sink->diagnose(
+                            Diagnostics::CoverageBindingOptionOutOfRange{
+                                .option = "-trace-coverage-reserved-space",
+                                .parsedValue = value.intValue,
+                            });
                     }
                     return SLANG_FAIL;
                 }
@@ -1179,9 +1184,10 @@ Result linkAndOptimizeIR(
         // `E45113` guarantee.
         if (counterByteWidth != 4 && counterByteWidth != 8)
         {
-            sink->diagnose(Diagnostics::CoverageCounterWidthBytesInvalid{
-                .byteWidth = counterByteWidth,
-            });
+            sink->diagnose(
+                Diagnostics::CoverageCounterWidthBytesInvalid{
+                    .byteWidth = counterByteWidth,
+                });
             return SLANG_FAIL;
         }
         // Metal cannot execute 64-bit counting-mode coverage: MSL provides no
@@ -2858,6 +2864,11 @@ SlangResult CodeGenContext::emitEntryPointsSourceFromIR(ComPtr<IArtifact>& outAr
                 sourceEmitter = new WGSLSourceEmitter(desc);
                 break;
             }
+        case SourceLanguage::ISPC:
+            {
+                sourceEmitter = new ISPCSourceEmitter(desc);
+                break;
+            }
         default:
             break;
         }
@@ -2869,8 +2880,9 @@ SlangResult CodeGenContext::emitEntryPointsSourceFromIR(ComPtr<IArtifact>& outAr
 
     if (!sourceEmitter)
     {
-        sink->diagnose(Diagnostics::UnableToGenerateCodeForTarget{
-            .target = TypeTextUtil::getCompileTargetName(SlangCompileTarget(target))});
+        sink->diagnose(
+            Diagnostics::UnableToGenerateCodeForTarget{
+                .target = TypeTextUtil::getCompileTargetName(SlangCompileTarget(target))});
         return SLANG_FAIL;
     }
 
@@ -2890,6 +2902,7 @@ SlangResult CodeGenContext::emitEntryPointsSourceFromIR(ComPtr<IArtifact>& outAr
         case SourceLanguage::CPP:
         case SourceLanguage::C:
         case SourceLanguage::CUDA:
+        case SourceLanguage::ISPC:
             linkingAndOptimizationOptions.shouldLegalizeExistentialAndResourceTypes = false;
             break;
         }
@@ -2983,10 +2996,11 @@ SlangResult CodeGenContext::emitEntryPointsSourceFromIR(ComPtr<IArtifact>& outAr
 
     if (sourceMap)
     {
-        auto sourceMapArtifact = ArtifactUtil::createArtifact(ArtifactDesc::make(
-            ArtifactKind::Json,
-            ArtifactPayload::SourceMap,
-            ArtifactStyle::None));
+        auto sourceMapArtifact = ArtifactUtil::createArtifact(
+            ArtifactDesc::make(
+                ArtifactKind::Json,
+                ArtifactPayload::SourceMap,
+                ArtifactStyle::None));
 
         sourceMapArtifact->addRepresentation(sourceMap);
 
@@ -3624,8 +3638,9 @@ SlangResult emitLLVMForEntryPoints(CodeGenContext* codeGenContext, ComPtr<IArtif
     ISlangSharedLibrary* library = codeGenContext->getSession()->getOrLoadSlangLLVM();
     if (!library)
     {
-        codeGenContext->getSink()->diagnose(Diagnostics::UnableToGenerateCodeForTarget{
-            .target = TypeTextUtil::getCompileTargetName(SlangCompileTarget(target))});
+        codeGenContext->getSink()->diagnose(
+            Diagnostics::UnableToGenerateCodeForTarget{
+                .target = TypeTextUtil::getCompileTargetName(SlangCompileTarget(target))});
         return SLANG_FAIL;
     }
 

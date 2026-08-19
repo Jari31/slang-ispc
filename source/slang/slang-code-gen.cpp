@@ -392,9 +392,10 @@ SlangResult CodeGenContext::emitWithDownstreamForEntryPoints(ComPtr<IArtifact>& 
             auto sourceName = TypeTextUtil::getCompileTargetName(SlangCompileTarget(sourceTarget));
             auto targetName = TypeTextUtil::getCompileTargetName(SlangCompileTarget(target));
 
-            sink->diagnose(Diagnostics::CompilerNotDefinedForTransition{
-                .sourceTarget = sourceName,
-                .destTarget = targetName});
+            sink->diagnose(
+                Diagnostics::CompilerNotDefinedForTransition{
+                    .sourceTarget = sourceName,
+                    .destTarget = targetName});
             return SLANG_FAIL;
         }
     }
@@ -465,8 +466,9 @@ SlangResult CodeGenContext::emitWithDownstreamForEntryPoints(ComPtr<IArtifact>& 
         // no downstream compiler knows how to deal with that, so probably means 'HLSL'
         sourceLanguage =
             (sourceLanguage == SourceLanguage::Slang) ? SourceLanguage::HLSL : sourceLanguage;
-        sourceTarget = CodeGenTarget(TypeConvertUtil::getCompileTargetFromSourceLanguage(
-            (SlangSourceLanguage)sourceLanguage));
+        sourceTarget = CodeGenTarget(
+            TypeConvertUtil::getCompileTargetFromSourceLanguage(
+                (SlangSourceLanguage)sourceLanguage));
 
         // If it's pass through we accumulate the preprocessor definitions.
         for (const auto& define :
@@ -617,11 +619,12 @@ SlangResult CodeGenContext::emitWithDownstreamForEntryPoints(ComPtr<IArtifact>& 
             default:
                 break;
 
-#define CASE(KIND, NAME, VERSION)                                                   \
-    case CapabilityAtom::NAME:                                                      \
-        requiredCapabilityVersions.add(DownstreamCompileOptions::CapabilityVersion{ \
-            DownstreamCompileOptions::CapabilityVersion::Kind::KIND,                \
-            VERSION});                                                              \
+#define CASE(KIND, NAME, VERSION)                                        \
+    case CapabilityAtom::NAME:                                           \
+        requiredCapabilityVersions.add(                                  \
+            DownstreamCompileOptions::CapabilityVersion{                 \
+                DownstreamCompileOptions::CapabilityVersion::Kind::KIND, \
+                VERSION});                                               \
         break
 
                 CASE(CUDASM, _cuda_sm_1_0, SemanticVersion(1, 0));
@@ -686,8 +689,9 @@ SlangResult CodeGenContext::emitWithDownstreamForEntryPoints(ComPtr<IArtifact>& 
                 auto downstreamCompilerName =
                     TypeTextUtil::getPassThroughName((SlangPassThrough)compilerType);
 
-                sink->diagnose(Diagnostics::DownstreamCompilerDoesntSupportWholeProgramCompilation{
-                    .compiler = downstreamCompilerName});
+                sink->diagnose(
+                    Diagnostics::DownstreamCompilerDoesntSupportWholeProgramCompilation{
+                        .compiler = downstreamCompilerName});
                 return SLANG_FAIL;
             }
         }
@@ -1134,11 +1138,12 @@ SlangResult CodeGenContext::_emitEntryPoints(ComPtr<IArtifact>& outArtifact)
             // Then disassemble the intermediate binary result to get the desired output
             // Output the disassemble
             ComPtr<IArtifact> disassemblyArtifact;
-            SLANG_RETURN_ON_FAIL(ArtifactOutputUtil::dissassembleWithDownstream(
-                getSession(),
-                intermediateArtifact,
-                getSink(),
-                disassemblyArtifact.writeRef()));
+            SLANG_RETURN_ON_FAIL(
+                ArtifactOutputUtil::dissassembleWithDownstream(
+                    getSession(),
+                    intermediateArtifact,
+                    getSink(),
+                    disassemblyArtifact.writeRef()));
 
             auto debugArtifact = getSeparateDbgArtifact(intermediateArtifact);
             auto coverageMetadata =
@@ -1167,11 +1172,12 @@ SlangResult CodeGenContext::_emitEntryPoints(ComPtr<IArtifact>& outArtifact)
             ComPtr<IArtifact> disassemblyDebugArtifact;
             if (debugArtifact)
             {
-                SLANG_RETURN_ON_FAIL(ArtifactOutputUtil::dissassembleWithDownstream(
-                    getSession(),
-                    debugArtifact,
-                    getSink(),
-                    disassemblyDebugArtifact.writeRef()));
+                SLANG_RETURN_ON_FAIL(
+                    ArtifactOutputUtil::dissassembleWithDownstream(
+                        getSession(),
+                        debugArtifact,
+                        getSink(),
+                        disassemblyDebugArtifact.writeRef()));
                 disassemblyDebugArtifact->setName(debugArtifact->getName());
 
                 // Attach the disassembled debug artifact alongside the primary disassembly.
