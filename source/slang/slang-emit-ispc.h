@@ -16,7 +16,7 @@ public:
 
     ISPCSourceEmitter(const Desc& desc);
 
-    virtual void emitVarDecorationsImpl(IRInst* var) SLANG_OVERRIDE;
-    virtual void emitModuleImpl(IRModule* module, DiagnosticSink* sink) SLANG_OVERRIDE;
+    // virtual void emitVarDecorationsImpl(IRInst* var) SLANG_OVERRIDE;
+    // virtual void emitModuleImpl(IRModule* module, DiagnosticSink* sink) SLANG_OVERRIDE;
 };
 } // namespace Slang

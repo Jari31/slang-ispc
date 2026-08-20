@@ -460,9 +460,14 @@ struct EntryPointInParamToBorrowContext : public TransformParamsToConstRefContex
         // information when we are in a release build.
         //
         auto layoutDecoration = param->findDecoration<IRLayoutDecoration>();
-        SLANG_ASSERT(layoutDecoration);
+        // SLANG_ASSERT(layoutDecoration); // Causes the compiler to optimize away the nullptr check
+        // (at least on MSVC), unsanitary
         if (!layoutDecoration)
             return false;
+
+        if (layoutDecoration->operandCount == 0)
+            return false;
+
         auto paramLayout = as<IRVarLayout>(layoutDecoration->getLayout());
         SLANG_ASSERT(paramLayout);
         if (!paramLayout)

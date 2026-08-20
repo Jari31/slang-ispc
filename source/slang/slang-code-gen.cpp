@@ -1296,6 +1296,7 @@ SlangResult CodeGenContext::emitEntryPoints(ComPtr<IArtifact>& outArtifact)
     case CodeGenTarget::CSource:
     case CodeGenTarget::Metal:
     case CodeGenTarget::WGSL:
+    case CodeGenTarget::ISPC:
         {
             RefPtr<ExtensionTracker> extensionTracker = _newExtensionTracker(target);
 

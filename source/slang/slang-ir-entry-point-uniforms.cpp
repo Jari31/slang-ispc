@@ -612,7 +612,8 @@ struct MoveEntryPointUniformParametersToGlobalScope : PerEntryPointPass
             // information when we are in a release build.
             //
             auto layoutDecoration = param->findDecoration<IRLayoutDecoration>();
-            SLANG_ASSERT(layoutDecoration);
+            // SLANG_ASSERT(layoutDecoration); // Causes the compiler to optimize away the nullptr
+            // check (at least on MSVC), unsanitary
             if (!layoutDecoration)
                 continue;
             auto paramLayout = as<IRVarLayout>(layoutDecoration->getLayout());

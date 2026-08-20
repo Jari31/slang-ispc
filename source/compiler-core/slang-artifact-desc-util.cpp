@@ -342,6 +342,9 @@ SLANG_HIERARCHICAL_ENUM(ArtifactStyle, SLANG_ARTIFACT_STYLE, SLANG_ARTIFACT_STYL
     case SLANG_SHADER_LLVM_IR:
         return Desc::make(Kind::Assembly, Payload::LLVMIR, Style::Kernel, 0);
 
+    case SLANG_ISPC_SOURCE:
+        return Desc::make(Kind::Source, Payload::ISPC, Style::Kernel, 0);
+
     default:
         break;
     }
@@ -402,6 +405,8 @@ SLANG_HIERARCHICAL_ENUM(ArtifactStyle, SLANG_ARTIFACT_STYLE, SLANG_ARTIFACT_STYL
                 return SLANG_METAL;
             case Payload::WGSL:
                 return SLANG_WGSL;
+            case Payload::ISPC:
+                return SLANG_ISPC_SOURCE;
             default:
                 break;
             }
@@ -609,7 +614,8 @@ static const KindExtension g_cpuKindExts[] = {
     else if (isDerivedFrom(desc.kind, ArtifactKind::Source))
     {
         // We'll assume C/C++ are targetting CPU, although that is perhaps somewhat arguable.
-        return desc.payload == Payload::C || desc.payload == Payload::Cpp;
+        return desc.payload == Payload::C || desc.payload == Payload::Cpp ||
+               desc.payload == Payload::ISPC;
     }
     else if (isDerivedFrom(desc.kind, ArtifactKind::Assembly))
     {
@@ -737,6 +743,9 @@ static UnownedStringSlice _getPayloadExtension(ArtifactPayload payload)
     case Payload::Slang:
         return toSlice("slang");
 
+    case Payload::ISPC:
+        return toSlice("ispc");
+
     /* Binary types */
     case Payload::DXIL:
         return toSlice("dxil");
@@ -761,6 +770,7 @@ static UnownedStringSlice _getPayloadExtension(ArtifactPayload payload)
         return toSlice("pdb");
     case Payload::SourceMap:
         return toSlice("map");
+
 
     default:
         break;

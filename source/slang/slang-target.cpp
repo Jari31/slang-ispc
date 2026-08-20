@@ -159,6 +159,7 @@ CapabilitySet TargetRequest::getTargetCaps()
         break;
 
     case CodeGenTarget::CSource:
+    case CodeGenTarget::ISPC:
         atoms.add(CapabilityName::c);
         break;
 

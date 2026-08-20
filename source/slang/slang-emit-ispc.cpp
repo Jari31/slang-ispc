@@ -7,24 +7,24 @@ ISPCSourceEmitter::ISPCSourceEmitter(const Desc& desc)
 {
 }
 
-void ISPCSourceEmitter::emitModuleImpl(IRModule* module, DiagnosticSink* sink)
-{
-    m_uniformityAnalysis.analyzeModule(module, sink);
+// void ISPCSourceEmitter::emitModuleImpl(IRModule* module, DiagnosticSink* sink)
+// {
+//     m_uniformityAnalysis.analyzeModule(module, sink);
 
-    Super::emitModuleImpl(module, sink);
-}
+//     Super::emitModuleImpl(module, sink);
+// }
 
-void ISPCSourceEmitter::emitVarDecorationsImpl(IRInst* var)
-{
-    if (m_uniformityAnalysis.isUniform(var))
-    {
-        m_writer->emit("uniform ");
-    }
-    else
-    {
-        m_writer->emit("varying ");
-    }
+// void ISPCSourceEmitter::emitVarDecorationsImpl(IRInst* var)
+// {
+//     if (m_uniformityAnalysis.isUniform(var))
+//     {
+//         m_writer->emit("uniform ");
+//     }
+//     else
+//     {
+//         m_writer->emit("varying ");
+//     }
 
-    Super::emitVarDecorationsImpl(var);
-}
+//     Super::emitVarDecorationsImpl(var);
+// }
 } // namespace Slang

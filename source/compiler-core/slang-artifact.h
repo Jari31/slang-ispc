@@ -69,7 +69,7 @@ struct CharSlice : public Slice<char>
     {
     }
     explicit CharSlice(const String& s)
-        : CharSlice(s.begin(), s.getLength()){};
+        : CharSlice(s.begin(), s.getLength()) {};
 };
 static_assert(std::is_trivially_copyable_v<CharSlice>);
 
@@ -175,6 +175,7 @@ enum class ArtifactPayload : uint8_t
     Metal, ///< Metal source
     Slang, ///< Slang source
     WGSL,  ///< WGSL source
+    ISPC,  ///< ISPC source
 
     KernelLike, ///< GPU Kernel like
 
