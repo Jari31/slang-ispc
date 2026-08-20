@@ -977,12 +977,6 @@ Result linkAndOptimizeIR(
 {
     SLANG_PROFILE;
 
-    std::cout << "[ISPC DEBUG] Target CodeGen Format: "
-              << (int)codeGenContext->getTargetProgram()->getTargetReq()->getTarget() << "\n";
-    std::cout << "[ISPC DEBUG] Is CPU target? "
-              << (isCPUTarget(codeGenContext->getTargetProgram()->getTargetReq()) ? "YES" : "NO")
-              << "\n";
-
     // This lambda is here so that we can select the correct overload for our parameters, without it
     // the overload deduction fails for passes which have overloads not taking an IRModule*
 #define SLANG_PASS(passFunc, ...)                                                          \
