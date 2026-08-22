@@ -2368,8 +2368,7 @@ Result linkAndOptimizeIR(
     case CodeGenTarget::ShaderHostCallable:
         SLANG_PASS(moveGlobalVarInitializationToEntryPoints, targetProgram);
         SLANG_PASS(introduceExplicitGlobalContext, target);
-        if (target == CodeGenTarget::CPPSource || target == CodeGenTarget::CPPHeader ||
-            target == CodeGenTarget::ISPC)
+        if (target == CodeGenTarget::CPPSource || target == CodeGenTarget::CPPHeader)
         {
             SLANG_PASS(convertEntryPointPtrParamsToRawPtrs);
         }

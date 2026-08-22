@@ -42,6 +42,8 @@ public:
 
     CPPSourceEmitter(const Desc& desc);
 
+    bool isPublicOrExportedFunc(IRFunc* func);
+
 protected:
     // Implement CLikeSourceEmitter interface
     virtual bool shouldEmitOnlyHeader() SLANG_OVERRIDE

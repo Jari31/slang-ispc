@@ -83,6 +83,7 @@ void ISPCSourceEmitter::emitModuleImpl(IRModule* module, DiagnosticSink* sink)
     }
 
     _emitWitnessTableDefinitions();
+    return;
     for (auto action : actions)
     {
         if (action.level == EmitAction::Level::Definition && action.inst->getOp() == kIROp_Func)
@@ -103,39 +104,141 @@ void ISPCSourceEmitter::emitModuleImpl(IRModule* module, DiagnosticSink* sink)
 
 void ISPCSourceEmitter::emitSimpleFuncParamImpl(IRParam* param)
 {
-    // Also kind of pointless and brings up errors. Only the export function needs uniformity.
-    // IRType* paramType = param->getDataType();
+    IRType* paramType = param->getDataType();
 
-    // bool isVoidPtr = false;
-    // if (paramType->getOp() == kIROp_RawPointerType || paramType->getOp() ==
-    // kIROp_RTTIPointerType)
-    // {
-    //     isVoidPtr = true;
-    // }
+    if (auto constantBufferType = as<IRConstantBufferType>(paramType))
+    {
+        IRType* elementType = constantBufferType->getElementType();
+        String typeName = getName(elementType);
 
-    // if (isVoidPtr)
-    // {
-    //     m_writer->emit("void* ");
-    //     if (m_uniformityAnalysis.isUniform(param))
-    //         m_writer->emit("uniform ");
-
-    //     m_writer->emit(getName(param));
-    //     return;
-    // }
-
-    // if (!isVoidPtr)
-    // {
-    //     if (m_uniformityAnalysis.isUniform(param))
-    //     {
-    //         m_writer->emit("uniform ");
-    //     }
-    //     else
-    //     {
-    //         m_writer->emit("varying ");
-    //     }
-    // }
+        // Verify if this is the EntryPointParams struct parameter
+        if (typeName.startsWith("EntryPointParams") || typeName.startsWith("GlobalParams"))
+        {
+            // Emit type name followed by ISPC reference '&' instead of '*' for ISPC supports
+            // reference passing for exports
+            m_writer->emit("uniform ");
+            emitType(elementType);
+            m_writer->emit("& ");
+            m_writer->emit(getName(param));
+            return;
+        }
+    }
 
     Super::emitSimpleFuncParamImpl(param);
+}
+
+void ISPCSourceEmitter::emitSimpleFuncImpl(IRFunc* func)
+{
+    bool isEntryPoint = func->findDecoration<IREntryPointDecoration>() != nullptr;
+
+    if (isEntryPoint)
+    {
+        m_writer->emit("export ");
+    }
+
+    // Emit decorations and visibility static qualifier as standard
+    emitFuncDecorations(func);
+
+    auto resultType = func->getResultType();
+    auto name = getName(func);
+
+    if (!isPublicOrExportedFunc(func))
+    {
+        m_writer->emit("static ");
+    }
+
+    emitType(resultType, name);
+
+    m_writer->emit("(");
+
+    bool isFirstEmittedParam = true;
+
+    String dispatchThreadIDVarName;
+    for (auto pp = func->getFirstParam(); pp; pp = pp->getNextParam())
+    {
+        if (as<IRTypeType>(pp->getFullType()))
+        {
+            continue;
+        }
+
+        if (isEntryPoint)
+        {
+            if (auto semanticDecor = pp->findDecoration<IRSemanticDecoration>())
+            {
+                UnownedStringSlice paramSemName = semanticDecor->getSemanticName();
+                if (paramSemName == "SV_DispatchThreadID")
+                {
+                    // Rename thread index with a local variable to get rid of gathers/scatters
+                    m_writer->emit(
+                        ", uniform uint32 SLANG_START_GROUP_ID[3], uniform uint32 "
+                        "SLANG_END_GROUP_ID[3]");
+
+                    dispatchThreadIDVarName = getName(pp);
+                    continue;
+                }
+            }
+        }
+
+        if (!isFirstEmittedParam)
+        {
+            m_writer->emit(", ");
+        }
+
+        emitSimpleFuncParamImpl(pp);
+        isFirstEmittedParam = false;
+    }
+    m_writer->emit(")");
+
+    emitSemantics(func);
+
+    if (isDefinition(func))
+    {
+        m_writer->emit("\n{\n");
+        m_writer->indent();
+
+        if (isEntryPoint)
+        {
+            m_writer->emit(
+                "for (uniform uint32 SLANG_THREAD_INDEX_Z = SLANG_START_GROUP_ID[2]; "
+                "SLANG_THREAD_INDEX_Z < "
+                "SLANG_END_GROUP_ID[2]; ++SLANG_THREAD_INDEX_Z)\n{\n");
+            m_writer->indent();
+            m_writer->emit(
+                "for (uniform uint32 SLANG_THREAD_INDEX_Y = SLANG_START_GROUP_ID[1]; "
+                "SLANG_THREAD_INDEX_Z < "
+                "SLANG_END_GROUP_ID[1]; ++SLANG_THREAD_INDEX_Y)\n{\n");
+            m_writer->indent();
+            m_writer->emit(
+                "foreach (SLANG_THREAD_INDEX_X = SLANG_START_GROUP_ID[0] ... "
+                "SLANG_END_GROUP_ID[0])\n{\n");
+            m_writer->indent();
+
+            m_writer->emit("uint32<3> ");
+            m_writer->emit(dispatchThreadIDVarName);
+            m_writer->emit(
+                " = { SLANG_THREAD_INDEX_X, SLANG_THREAD_INDEX_Y, "
+                "SLANG_THREAD_INDEX_Z };\n");
+        }
+
+        emitFunctionBody(func);
+
+        if (isEntryPoint)
+        {
+            m_writer->dedent();
+            m_writer->emit("}\n");
+            m_writer->dedent();
+            m_writer->emit("}\n");
+            m_writer->dedent();
+            m_writer->emit("}\n");
+        }
+
+        m_writer->dedent();
+        m_writer->emit("}\n\n");
+    }
+    else
+    {
+        m_writer->emit(";\n\n");
+    }
 }
 
 UnownedStringSlice ISPCSourceEmitter::getBuiltinTypeName(IROp op)
@@ -886,4 +989,21 @@ void ISPCSourceEmitter::emitSimpleTypeImpl(IRType* inType)
 
     Super::emitSimpleTypeImpl(inType);
 }
+
+bool ISPCSourceEmitter::shouldFoldInstIntoUseSites(IRInst* inst)
+{
+    switch (inst->getOp())
+    {
+    case kIROp_FieldAddress:
+    case kIROp_GetElementPtr:
+        // Return false here so it emits named variables instead of giant inline casts
+        // ISPC doesn't enjoy pointers in that style very much
+        return false;
+
+    default:
+        break;
+    }
+
+    return CLikeSourceEmitter::shouldFoldInstIntoUseSites(inst);
+};
 } // namespace Slang

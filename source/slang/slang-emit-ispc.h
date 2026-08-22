@@ -34,5 +34,9 @@ public:
     virtual void emitSimpleValueImpl(IRInst* inst) SLANG_OVERRIDE;
 
     virtual void emitSimpleTypeImpl(IRType* inType) SLANG_OVERRIDE;
+
+    virtual bool shouldFoldInstIntoUseSites(IRInst* inst) SLANG_OVERRIDE;
+
+    virtual void emitSimpleFuncImpl(IRFunc* func) SLANG_OVERRIDE;
 };
 } // namespace Slang

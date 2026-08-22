@@ -953,7 +953,7 @@ void CPPSourceEmitter::emitEntryPointAttributesImpl(
     m_writer->emit("SLANG_PRELUDE_EXPORT\n");
 }
 
-bool isPublicOrExportedFunc(IRFunc* func)
+bool CPPSourceEmitter::isPublicOrExportedFunc(IRFunc* func)
 {
     for (auto decor : func->getDecorations())
     {
