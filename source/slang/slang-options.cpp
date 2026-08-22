@@ -4760,6 +4760,7 @@ SlangResult OptionsParser::_parse(int argc, char const* const* argv)
                     {
                     case CodeGenTarget::CPPSource:
                     case CodeGenTarget::CPPHeader:
+                    case CodeGenTarget::ISPC:
                     case CodeGenTarget::PTX:
                     case CodeGenTarget::CUDASource:
                     case CodeGenTarget::CUDAHeader:

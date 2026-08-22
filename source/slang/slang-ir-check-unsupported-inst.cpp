@@ -100,6 +100,7 @@ static bool isKernelCPPOrCUDASourceTarget(TargetRequest* target)
     case CodeGenTarget::CUDASource:
     case CodeGenTarget::CUDAHeader:
     case CodeGenTarget::PTX:
+    case CodeGenTarget::ISPC:
         return true;
     default:
         return false;
@@ -186,9 +187,10 @@ void checkUnsupportedInst(TargetRequest* target, IRFunc* func, DiagnosticSink* s
                         // fall back to the location of a use.
                         auto loc =
                             inst->sourceLoc.isValid() ? inst->sourceLoc : findFirstUseLoc(inst);
-                        sink->diagnose(Diagnostics::OpaqueTypeInLocalVariableNotAllowedOnKhronos{
-                            .type = handleType,
-                            .location = loc});
+                        sink->diagnose(
+                            Diagnostics::OpaqueTypeInLocalVariableNotAllowedOnKhronos{
+                                .type = handleType,
+                                .location = loc});
                     }
                 }
                 break;
@@ -209,9 +211,10 @@ void checkUnsupportedInst(TargetRequest* target, IRFunc* func, DiagnosticSink* s
                     {
                         auto loc =
                             inst->sourceLoc.isValid() ? inst->sourceLoc : findFirstUseLoc(inst);
-                        sink->diagnose(Diagnostics::OpaqueTypeInLocalVariableNotAllowedOnKhronos{
-                            .type = handleType,
-                            .location = loc});
+                        sink->diagnose(
+                            Diagnostics::OpaqueTypeInLocalVariableNotAllowedOnKhronos{
+                                .type = handleType,
+                                .location = loc});
                     }
                 }
                 break;
@@ -242,9 +245,10 @@ void checkUnsupportedInst(IRModule* module, TargetRequest* target, DiagnosticSin
                 if (!as<IRBasicType>(globalInst->getOperand(0)) &&
                     !as<IRPackedFloatType>(globalInst->getOperand(0)))
                 {
-                    sink->diagnose(Diagnostics::UnsupportedBuiltinType{
-                        .type = globalInst,
-                        .location = findFirstUseLoc(globalInst)});
+                    sink->diagnose(
+                        Diagnostics::UnsupportedBuiltinType{
+                            .type = globalInst,
+                            .location = findFirstUseLoc(globalInst)});
                 }
                 break;
             }

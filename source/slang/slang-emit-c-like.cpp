@@ -2058,6 +2058,7 @@ void CLikeSourceEmitter::emitInstResultDecl(IRInst* inst)
         case SourceLanguage::HLSL:
         case SourceLanguage::C:
         case SourceLanguage::CPP:
+        case SourceLanguage::ISPC:
             m_writer->emit("static const ");
             break;
         case SourceLanguage::Metal:
@@ -3524,6 +3525,7 @@ void CLikeSourceEmitter::_emitInstAsDefaultInitializedVar(IRInst* inst, IRType* 
     switch (this->getTarget())
     {
     case CodeGenTarget::CPPSource:
+    case CodeGenTarget::ISPC:
     case CodeGenTarget::HostCPPSource:
     case CodeGenTarget::PyTorchCppBinding:
     case CodeGenTarget::CUDASource:

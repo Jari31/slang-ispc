@@ -74,6 +74,7 @@ PassThroughMode getDownstreamCompilerRequiredForTarget(CodeGenTarget target)
     case CodeGenTarget::CUDAHeader:
     case CodeGenTarget::CPPSource:
     case CodeGenTarget::CPPHeader:
+    case CodeGenTarget::ISPC:
     case CodeGenTarget::HostCPPSource:
     case CodeGenTarget::PyTorchCppBinding:
     case CodeGenTarget::CSource:

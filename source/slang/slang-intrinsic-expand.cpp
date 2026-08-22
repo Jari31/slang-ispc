@@ -76,9 +76,10 @@ void IntrinsicExpandContext::emit(
     // we never emit C++-only syntax for HLSL/GLSL/WGSL/Metal/SPIR-V.
     if (_isUnsupportedIntrinsicPlaceholder(intrinsicText))
     {
-        m_emitter->getSink()->diagnose(Diagnostics::UnsupportedTargetIntrinsic{
-            .operation = _getIntrinsicOperationName(inst),
-            .location = inst->sourceLoc});
+        m_emitter->getSink()->diagnose(
+            Diagnostics::UnsupportedTargetIntrinsic{
+                .operation = _getIntrinsicOperationName(inst),
+                .location = inst->sourceLoc});
 
         const auto retType = inst->getDataType();
         if (as<IRVoidType>(retType) == nullptr)

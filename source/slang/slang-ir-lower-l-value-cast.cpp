@@ -151,6 +151,7 @@ struct LValueCastLoweringContext
         case SourceLanguage::C:
         case SourceLanguage::CPP:
         case SourceLanguage::CUDA:
+        case SourceLanguage::ISPC:
             {
                 // For languages with pointers, out parameter differences can *sometimes* just be
                 // sidestepped with a reinterpret cast.

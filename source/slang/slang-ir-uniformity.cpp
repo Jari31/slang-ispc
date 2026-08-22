@@ -454,6 +454,11 @@ struct ValidateUniformityContext
                 for (auto param : func->getParams())
                 {
                     auto varLayout = findVarLayout(param);
+                    if (!varLayout)
+                    {
+                        continue;
+                    }
+
                     if (isVaryingParameter(varLayout) ||
                         varLayout->findAttr<IRSystemValueSemanticAttr>())
                     {

@@ -1272,6 +1272,7 @@ Result linkAndOptimizeIR(
 
         case CodeGenTarget::CPPSource:
         case CodeGenTarget::CPPHeader:
+        case CodeGenTarget::ISPC:
         case CodeGenTarget::ShaderLLVMIR:
         case CodeGenTarget::ShaderObjectCode:
         case CodeGenTarget::ShaderHostCallable:
@@ -1293,6 +1294,7 @@ Result linkAndOptimizeIR(
     case CodeGenTarget::HostCPPSource:
     case CodeGenTarget::CPPSource:
     case CodeGenTarget::CPPHeader:
+    case CodeGenTarget::ISPC:
     case CodeGenTarget::CUDASource:
     case CodeGenTarget::CUDAHeader:
     case CodeGenTarget::HostVM:
@@ -2248,6 +2250,7 @@ Result linkAndOptimizeIR(
     case CodeGenTarget::CSource:
     case CodeGenTarget::CPPSource:
     case CodeGenTarget::CPPHeader:
+    // case CodeGenTarget::ISPC:
     case CodeGenTarget::ShaderLLVMIR:
     case CodeGenTarget::ShaderObjectCode:
     case CodeGenTarget::ShaderHostCallable:
@@ -2346,6 +2349,7 @@ Result linkAndOptimizeIR(
     case CodeGenTarget::Metal:
     case CodeGenTarget::CPPSource:
     case CodeGenTarget::CPPHeader:
+    case CodeGenTarget::ISPC:
     case CodeGenTarget::CUDASource:
     case CodeGenTarget::CUDAHeader:
         // For CUDA/OptiX like targets, add our pass to replace inout parameter copies with
@@ -2364,7 +2368,8 @@ Result linkAndOptimizeIR(
     case CodeGenTarget::ShaderHostCallable:
         SLANG_PASS(moveGlobalVarInitializationToEntryPoints, targetProgram);
         SLANG_PASS(introduceExplicitGlobalContext, target);
-        if (target == CodeGenTarget::CPPSource || target == CodeGenTarget::CPPHeader)
+        if (target == CodeGenTarget::CPPSource || target == CodeGenTarget::CPPHeader ||
+            target == CodeGenTarget::ISPC)
         {
             SLANG_PASS(convertEntryPointPtrParamsToRawPtrs);
         }

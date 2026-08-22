@@ -1022,7 +1022,7 @@ void CPPSourceEmitter::emitSimpleFuncImpl(IRFunc* func)
     auto firstParam = func->getFirstParam();
     for (auto pp = firstParam; pp; pp = pp->getNextParam())
     {
-        // Ingore TypeType-typed parameters for now.
+        // Ignore TypeType-typed parameters for now.
         // In the future we will pass around runtime type info
         // for TypeType parameters.
         if (as<IRTypeType>(pp->getFullType()))
@@ -1307,9 +1307,10 @@ void CPPSourceEmitter::emitTempModifiers(IRInst* temp)
     // C/C++ (and, via inheritance, CUDA) has no `precise` keyword; drop it and warn.
     if (temp->findDecoration<IRPreciseDecoration>())
     {
-        getSink()->diagnose(Diagnostics::PreciseQualifierUnsupportedOnTarget{
-            .target = TypeTextUtil::getCompileTargetName(SlangCompileTarget(getTarget())),
-            .location = temp->sourceLoc});
+        getSink()->diagnose(
+            Diagnostics::PreciseQualifierUnsupportedOnTarget{
+                .target = TypeTextUtil::getCompileTargetName(SlangCompileTarget(getTarget())),
+                .location = temp->sourceLoc});
     }
 }
 

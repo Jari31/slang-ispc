@@ -159,12 +159,12 @@ CapabilitySet TargetRequest::getTargetCaps()
         break;
 
     case CodeGenTarget::CSource:
-    case CodeGenTarget::ISPC:
         atoms.add(CapabilityName::c);
         break;
 
     case CodeGenTarget::CPPSource:
     case CodeGenTarget::CPPHeader:
+    case CodeGenTarget::ISPC:
     case CodeGenTarget::PyTorchCppBinding:
     case CodeGenTarget::HostExecutable:
     case CodeGenTarget::ShaderSharedLibrary:
